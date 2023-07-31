@@ -1,0 +1,92 @@
+#include <bits/stdc++.h>
+#include<random>
+
+using namespace std;
+
+int main() {
+    std::random_device rd;
+    std::uniform_int_distribution<int> GET_N(1, 300000);
+    std::uniform_int_distribution<int> GET_M(1, 100);
+    std::uniform_int_distribution<int> GET_SHOPI(0, 100);
+    std::uniform_int_distribution<int> GET_MOVIE_I(0, 100);
+    std::uniform_int_distribution<int> GET_PRICE_I(0, 100);
+    map<int, vector<int>> shop_movies;//
+    map<int, vector<int>> shop_rented_movies;//已经借出去的电影
+    vector<int> movies;
+    std::mt19937_64 gen(rd() + time(0));
+    std::uniform_int_distribution<int> CHOOSE(0, 3);//0:search 1rent 2drop 3report
+    int n = GET_N(gen);
+    int m = GET_M(gen);
+    cout << n << " " << m << endl;
+    int has_rented = 0;
+    for (int i = 0; i < m; i++) {
+        int shop_i, movie_i, price_i;
+        shop_i = GET_SHOPI(gen);
+        movie_i = GET_MOVIE_I(gen);
+        price_i = GET_PRICE_I(gen);
+        while (shop_i >= n) {
+            //大于n重新生成
+            shop_i = GET_SHOPI(gen);
+        }
+        if (shop_movies.count(shop_i) == 0) {
+            shop_movies[shop_i].push_back(movie_i);
+        } else {
+            while (find(shop_movies[shop_i].begin(), shop_movies[shop_i].end(), movie_i) != shop_movies[shop_i].end()) {
+                movie_i = GET_MOVIE_I(gen);
+                //保证一个商店只有一个副本
+            }
+            shop_movies[shop_i].push_back(movie_i);
+        }
+        movies.push_back(movie_i);
+        cout << shop_i << " " << movie_i << " " << price_i << endl;
+    }
+    int k = 30;//调用函数次数
+    while (k--) {
+        int r = CHOOSE(gen);
+        if (r == 0) {
+            //调用search;
+            int movie__i = GET_MOVIE_I(gen);
+            while (find(movies.begin(), movies.end(), movie__i) == movies.end()) {
+                movie__i = GET_MOVIE_I(gen);
+            }
+            cout << "search " << movie__i << endl;
+        } else if (r == 1) {
+            //调用rent;先生成符合条件的shop
+            int shop__i = GET_SHOPI(gen);
+            while (shop_movies.count(shop__i) == 0) {
+                shop__i = GET_SHOPI(gen);
+            }
+            //再生成符合条件的movie i;
+            if (shop_movies[shop__i].size() == 0) {
+                continue;
+            }
+            int tmp = GET_MOVIE_I(gen);
+            int movie_i_index = tmp % shop_movies[shop__i].size();
+            int movie__i = shop_movies[shop__i][movie_i_index];//借走的一定是有的
+            shop_rented_movies[shop__i].push_back(shop_movies[shop__i][movie_i_index]);//放入借出去的电影中
+            shop_movies[shop__i].erase(shop_movies[shop__i].begin() + movie_i_index);
+            has_rented++;
+            cout << "rent " << shop__i << " " << movie__i << endl;
+        } else if (r == 2 && has_rented) {
+            int shop__i = GET_SHOPI(gen);
+            has_rented--;
+            while (shop_rented_movies.count(shop__i) == 0)//归还
+            {
+                //如果这个商店没有被借走任何东西,那么需要重新生成
+                shop__i = GET_SHOPI(gen);
+            }
+            if (shop_rented_movies[shop__i].size() == 0) {
+                continue;
+            }
+            int tmp = GET_MOVIE_I(gen);
+            int movie_i_index = tmp % shop_rented_movies[shop__i].size();
+            int movie__i = shop_rented_movies[shop__i][movie_i_index];//归还的一定是被借走的
+            shop_movies[shop__i].push_back(shop_rented_movies[shop__i][movie_i_index]);//放入未被借走的商店中
+            shop_rented_movies[shop__i].erase(shop_rented_movies[shop__i].begin() + movie_i_index);
+            cout << "drop " << shop__i << " " << movie__i << endl;
+        } else if (r == 3) {
+            cout << "report" << endl;
+        }
+    }
+    return 0;
+}

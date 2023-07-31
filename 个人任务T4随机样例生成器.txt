@@ -1,0 +1,41 @@
+#include <bits/stdc++.h>
+#include<random>
+
+using namespace std;
+
+int main() {
+    std::random_device rd;
+    std::mt19937_64 gen2(rd() + 1);
+    std::uniform_int_distribution<int> distrib1(-9999, 9999);//生成min到max的数字
+    std::mt19937_64 gen3(rd() + 2);
+    std::uniform_int_distribution<int> distrib2(0, 1000);
+    int k = distrib2(gen2);
+//    cout<<"0"<<endl;
+//    cout<<"10000"<<endl;
+    vector<long long> res;
+    cout << k << endl;
+    int i = 1;
+    while (k--) {
+        res.push_back(distrib1(gen3));
+    }
+    sort(res.begin(), res.end());//题目说有序就排序
+    for (auto x: res) {
+        if (i % 10 == 0) { cout << endl; }
+        cout << x << " ";
+        i++;
+    }
+    cout << endl;
+    cout << res[distrib2(gen2) % res.size()] << endl;//保证输出的这个数在数组里面
+    return 0;
+
+//    vector<long long>res1=res;
+//    reverse(res1.begin(),res1.end());
+//   for(int i=0;i<res1.size();i++)
+//   {
+//       res.push_back(res1[i]);
+//   }
+//    for(int i=0;i<res.size();i++)
+//    {
+//        cout<<res[i]<<" ";
+//    }
+}
